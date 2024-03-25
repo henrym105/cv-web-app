@@ -1,8 +1,6 @@
+
 Can access api through a browser on any other device connected to the same wifi network as the host (this laptop)
 
-### To run locally in test environment: 
-`flask run`
-- `Ctrl + C` to shut down 
 
 ### To run locally in test environment: 
 1) run the gunicorn web server
@@ -16,7 +14,7 @@ Can access api through a browser on any other device connected to the same wifi 
 
 ### Notes:
 poseEstimationModule.findFeet(img) -> find coordinates of a person's body and face, option to draw wireframe on image 
-poseEstimationModule.findFeet(img) -> locate the coordinates for the person's ankle, heel, and toes, then option to draw over them with pink dots
+poseEstimationModule.findFeet(img) -> locate the coordinates for the person's ankle, heel, and toes, then option to draw over them with pink dots.
 
 
 # FEATURES TO ADD:
