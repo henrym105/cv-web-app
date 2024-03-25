@@ -16,18 +16,6 @@ if uploaded_file is not None:
     file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
     img = cv2.imdecode(file_bytes, 1)
 
-    # Get the original dimensions of the image
-    original_height, original_width = img.shape[:2]
-
-    # Calculate the scaling factor to ensure the width is at most 500 pixels
-    scaling_factor = min(1.0, 500 / original_width)
-
-    # Calculate the new dimensions
-    new_width = int(original_width * scaling_factor)
-    new_height = int(original_height * scaling_factor)
-
-    # Resize the image with the calculated dimensions
-    resized_image = cv2.resize(img, (new_width, new_height))
     
     # Process the image with the pose estimation model
     try:
