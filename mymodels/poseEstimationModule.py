@@ -60,27 +60,3 @@ class poseDetector:
             return img
         else:
             return feetList
-
-
-def main():
-    cap = cv2.VideoCapture(os.path.join('Videos', 'processed', 'putts1.mp4'))
-    pTime = 0
-
-    detector = poseDetector()
-
-    while True:
-        success, img = cap.read()
-        img = detector.findPose(img)
-
-        cTime = time.time()
-        fps = 1/(cTime - pTime)
-        pTime = cTime
-
-        
-        cv2.imshow("Image", img)
-        # cv2.putText(img, text=str(int(fps)), org = (70, 50), fontFace = cv2.FONT_HERSHEY_PLAIN, fontScale = 3, color = (255, 0, 0), thickness = 3)
-        cv2.waitKey(1)
-
-
-if __name__ == "__main__":
-    main()
