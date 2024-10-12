@@ -6,7 +6,6 @@ from flask import Flask, request, render_template, send_file, jsonify
 from PIL import Image
 from mymodels import poseEstimationModule as pem
 
-
 app = Flask(__name__)
 
 # Ensure there's a folder for uploaded images

@@ -28,8 +28,8 @@ class poseDetector:
         # if any body parts are foung in the image, draw them 
         if draw and self.results.pose_landmarks:
             # Calculate the radius of the dots as 1/20th of the image width
-            dot_radius = int(img.shape[1] / 100)
-            line_thickness = int(dot_radius / 10)
+            dot_radius = max(int(img.shape[1] / 100), 2)
+            line_thickness = max(int(dot_radius / 10), 2)
             # Draw landmarks with the calculated dot size
             self.mpDraw.draw_landmarks(
                 img, 
