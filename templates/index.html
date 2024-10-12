@@ -4,103 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Upload</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Pose Estimation Web App</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div id="branding">
-                <h1>Image Upload</h1>
-            </div>
-            <nav>
-                <ul>
-                    <li class="current"><a href="/">Home</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    <div class="container">
-        <h2>Upload an Image</h2>
-        <p>Choose an image file from your device or use your camera to take a picture.</p>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" id="fileInput">
-            <input type="submit" value="Upload">
-        </form>
-        <button id="cameraButton">Use Camera</button>
-        <video id="video" width="640" height="480" autoplay style="display:none;"></video>
-        <button id="captureButton" style="display:none;">Capture</button>
-        <button id="clearButton" style="display:none;">Clear</button>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <div id="imageContainer">
-            <img id="uploadedImage" src="" alt="Uploaded Image" style="display:none; max-width: 100%; height: auto;">
-        </div>
-    </div>
+    <h1>Pose Estimation Web App</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" id="fileInput">
+        <button type="submit">Upload</button>
+    </form>
+    <button id="cameraButton">Use Camera</button>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <img id="uploadedImage" style="display:none;">
+    <button id="clearButton" style="display:none;">Clear</button>
     <script>
-        const cameraButton = document.getElementById('cameraButton');
         const video = document.getElementById('video');
-        const captureButton = document.getElementById('captureButton');
-        const clearButton = document.getElementById('clearButton');
         const canvas = document.getElementById('canvas');
-        const uploadForm = document.getElementById('uploadForm');
-        const uploadedImage = document.getElementById('uploadedImage');
+        const context = canvas.getContext('2d');
+        const cameraButton = document.getElementById('cameraButton');
 
-        cameraButton.addEventListener('click', () => {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    video.srcObject = stream;
-                    video.style.display = 'block';
-                    captureButton.style.display = 'block';
-                    clearButton.style.display = 'none';
-                })
-                .catch(err => console.error('Error accessing camera: ', err));
+        cameraButton.addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
         });
 
-        captureButton.addEventListener('click', () => {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            video.style.display = 'none';
-            captureButton.style.display = 'none';
-            clearButton.style.display = 'block';
-            canvas.toBlob(blob => {
-                const formData = new FormData();
-                formData.append('file', blob, 'captured_image.jpg');
-                fetch('/upload', {
+        video.addEventListener('play', () => {
+            const processFrame = async () => {
+                if (video.paused || video.ended) {
+                    return;
+                }
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const frame = canvas.toDataURL('image/jpeg');
+                const response = await fetch('/process_frame', {
                     method: 'POST',
-                    body: formData
-                })
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    uploadedImage.src = url;
-                    uploadedImage.style.display = 'block';
-                })
-                .catch(error => console.error('Error:', error));
-            }, 'image/jpeg');
-        });
-
-        clearButton.addEventListener('click', () => {
-            uploadedImage.style.display = 'none';
-            clearButton.style.display = 'none';
-        });
-
-        uploadForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                uploadedImage.src = url;
-                uploadedImage.style.display = 'block';
-                clearButton.style.display = 'block';
-            })
-            .catch(error => console.error('Error:', error));
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ frame })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const img = new Image();
+                    img.src = 'data:image/jpeg;base64,' + result.image;
+                    img.onload = () => {
+                        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    };
+                }
+                requestAnimationFrame(processFrame);
+            };
+            processFrame();
         });
     </script>
 </body>
