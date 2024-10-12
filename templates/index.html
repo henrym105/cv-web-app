@@ -26,12 +26,57 @@
             <input type="file" name="file" id="fileInput">
             <input type="submit" value="Upload">
         </form>
+        <button id="cameraButton">Use Camera</button>
+        <video id="video" width="640" height="480" autoplay style="display:none;"></video>
+        <button id="captureButton" style="display:none;">Capture</button>
+        <canvas id="canvas" style="display:none;"></canvas>
         <div id="imageContainer">
             <img id="uploadedImage" src="" alt="Uploaded Image" style="display:none; max-width: 100%; height: auto;">
         </div>
     </div>
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        const cameraButton = document.getElementById('cameraButton');
+        const video = document.getElementById('video');
+        const captureButton = document.getElementById('captureButton');
+        const canvas = document.getElementById('canvas');
+        const uploadForm = document.getElementById('uploadForm');
+
+        cameraButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    captureButton.style.display = 'block';
+                })
+                .catch(err => console.error('Error accessing camera: ', err));
+        });
+
+        captureButton.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.style.display = 'none';
+            captureButton.style.display = 'none';
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('file', blob, 'captured_image.jpg');
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const img = document.getElementById('uploadedImage');
+                    img.src = url;
+                    img.style.display = 'block';
+                })
+                .catch(error => console.error('Error:', error));
+            }, 'image/jpeg');
+        });
+
+        uploadForm.addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(this);
             fetch('/upload', {
