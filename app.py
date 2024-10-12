@@ -48,19 +48,20 @@ def upload_image():
             img_io = io.BytesIO()
             img.save(img_io, format='JPEG', quality=70)
             img_io.seek(0)
-            
-            # remove the downloaded image after processing to avoid build up
-            os.remove(filename)
 
             return send_file(img_io, mimetype='image/jpeg')
 
         except FileNotFoundError:
-            return jsonify({'error': 'File not found after saving'}), 500
+            return jsonify({'Error': 'File not found after saving'}), 500
         except IOError:
-            return jsonify({'error': 'Error processing image file'}), 500
+            return jsonify({'Error': 'Error processing image file'}), 500
         except Exception as e:
-            # Catch all for any other errors during processing
-            return jsonify({'error': 'Error during image processing', 'message': str(e)}), 500
+            return jsonify({'Error': 'Error during image processing', 
+                            'Message': str(e),
+                            'Removing file':filename}), 500
+        finally:
+            # remove the downloaded image after processing to avoid build up
+            os.remove(filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
