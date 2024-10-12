@@ -28,14 +28,15 @@ class poseDetector:
         # if any body parts are foung in the image, draw them 
         if draw and self.results.pose_landmarks:
             # Calculate the radius of the dots as 1/20th of the image width
-            dot_radius = int(img.shape[1] / 20)
-            
+            dot_radius = int(img.shape[1] / 100)
+            line_thickness = int(dot_radius / 10)
             # Draw landmarks with the calculated dot size
             self.mpDraw.draw_landmarks(
                 img, 
                 self.results.pose_landmarks, 
                 self.mpPose.POSE_CONNECTIONS,
-                landmark_drawing_spec=self.mpDraw.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=dot_radius)
+                landmark_drawing_spec=self.mpDraw.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=dot_radius),
+                connection_drawing_spec=self.mpDraw.DrawingSpec(color=(0, 0, 255), thickness=line_thickness)
             )
 
         return img
