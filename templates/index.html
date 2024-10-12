@@ -22,6 +22,7 @@
     </header>
     <div class="container">
         <h2>Upload an Image</h2>
+        <p>Choose an image file from your device or use your camera to take a picture.</p>
         <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file" id="fileInput">
             <input type="submit" value="Upload">
@@ -29,6 +30,7 @@
         <button id="cameraButton">Use Camera</button>
         <video id="video" width="640" height="480" autoplay style="display:none;"></video>
         <button id="captureButton" style="display:none;">Capture</button>
+        <button id="clearButton" style="display:none;">Clear</button>
         <canvas id="canvas" style="display:none;"></canvas>
         <div id="imageContainer">
             <img id="uploadedImage" src="" alt="Uploaded Image" style="display:none; max-width: 100%; height: auto;">
@@ -38,8 +40,10 @@
         const cameraButton = document.getElementById('cameraButton');
         const video = document.getElementById('video');
         const captureButton = document.getElementById('captureButton');
+        const clearButton = document.getElementById('clearButton');
         const canvas = document.getElementById('canvas');
         const uploadForm = document.getElementById('uploadForm');
+        const uploadedImage = document.getElementById('uploadedImage');
 
         cameraButton.addEventListener('click', () => {
             navigator.mediaDevices.getUserMedia({ video: true })
@@ -47,6 +51,7 @@
                     video.srcObject = stream;
                     video.style.display = 'block';
                     captureButton.style.display = 'block';
+                    clearButton.style.display = 'none';
                 })
                 .catch(err => console.error('Error accessing camera: ', err));
         });
@@ -58,6 +63,7 @@
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             video.style.display = 'none';
             captureButton.style.display = 'none';
+            clearButton.style.display = 'block';
             canvas.toBlob(blob => {
                 const formData = new FormData();
                 formData.append('file', blob, 'captured_image.jpg');
@@ -68,12 +74,16 @@
                 .then(response => response.blob())
                 .then(blob => {
                     const url = URL.createObjectURL(blob);
-                    const img = document.getElementById('uploadedImage');
-                    img.src = url;
-                    img.style.display = 'block';
+                    uploadedImage.src = url;
+                    uploadedImage.style.display = 'block';
                 })
                 .catch(error => console.error('Error:', error));
             }, 'image/jpeg');
+        });
+
+        clearButton.addEventListener('click', () => {
+            uploadedImage.style.display = 'none';
+            clearButton.style.display = 'none';
         });
 
         uploadForm.addEventListener('submit', function(event) {
@@ -86,9 +96,9 @@
             .then(response => response.blob())
             .then(blob => {
                 const url = URL.createObjectURL(blob);
-                const img = document.getElementById('uploadedImage');
-                img.src = url;
-                img.style.display = 'block';
+                uploadedImage.src = url;
+                uploadedImage.style.display = 'block';
+                clearButton.style.display = 'block';
             })
             .catch(error => console.error('Error:', error));
         });
