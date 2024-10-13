@@ -5,6 +5,9 @@ import numpy as np
 from flask import Flask, request, render_template, send_file, jsonify
 from PIL import Image
 from mymodels import poseEstimationModule as pem
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -23,21 +26,25 @@ def upload_image():
         return 'No file part', 400
 
     file = request.files['file']
+    logging.debug(f"Received file: {file.filename}")
 
     if file.filename == '':
         return 'No selected file', 400
     if file:
         filename = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filename)
+        logging.debug(f"File saved to: {filename}")
 
         try:
             # Process the image with the pose estimation model
+            logging.debug("Processing image with pose estimation model")
             img = cv2.imread(str(filename))
             detector = pem.poseDetector()
             img = detector.findPose(img)
             img = detector.findFeet(img)
+            logging.debug("Image processed successfully")
 
-            # apply color correction
+            # Apply color correction
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # Convert NumPy array to PIL Image
@@ -59,8 +66,9 @@ def upload_image():
                             'Message': str(e),
                             'Removing file':filename}), 500
         finally:
-            # remove the downloaded image after processing to avoid build up
+            # Remove the downloaded image after processing to avoid build up
             os.remove(filename)
+    return 'File uploaded successfully', 200
 
 if __name__ == '__main__':
     app.run(debug=True)

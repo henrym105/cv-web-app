@@ -5,9 +5,11 @@ import './App.css';
 
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleImageUpload = (image) => {
     setUploadedImage(image);
+    setLoading(false); // Stop loading when the image is uploaded
   };
 
   return (
@@ -22,8 +24,9 @@ function App() {
       <div className="container">
         <h2>Upload an Image</h2>
         <p>Choose an image file from your device or use your camera to take a picture.</p>
-        <ImageUpload onImageUpload={handleImageUpload} />
-        <CameraCapture onImageUpload={handleImageUpload} />
+        <ImageUpload onImageUpload={handleImageUpload} setLoading={setLoading} />
+        <CameraCapture onImageUpload={handleImageUpload} setLoading={setLoading} />
+        {loading && <div className="spinner">Loading...</div>}
         {uploadedImage && (
           <div id="imageContainer">
             <img id="uploadedImage" src={uploadedImage} alt="Uploaded" style={{ maxWidth: '100%', height: 'auto' }} />
